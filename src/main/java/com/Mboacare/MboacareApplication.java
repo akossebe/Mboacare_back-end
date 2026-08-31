@@ -1,4 +1,4 @@
-package com.Mboacare.Mboacare;
+package com.Mboacare;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
