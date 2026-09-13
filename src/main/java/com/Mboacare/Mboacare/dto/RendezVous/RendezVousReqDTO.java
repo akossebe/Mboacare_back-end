@@ -1,5 +1,6 @@
 package com.Mboacare.Mboacare.dto.RendezVous;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -26,6 +27,10 @@ public class RendezVousReqDTO {
     private LocalDate dateSouhaitee;
 
     @NotNull(message = "L'heure souhaitee est obligatoire")
+    @Schema(
+            description = "Heure souhaitée du rendez-vous",
+            example = "09:30:00"
+    )
     private LocalTime heureSouhaitee;
 
     private String motifPrise;
