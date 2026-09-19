@@ -11,11 +11,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-/**
- * "Response" DTO = ce que l'API RENVOIE au client apres une operation.
- * Ici on renvoie tout, y compris l'id et le statut, car le client
- * (Angular) en a besoin pour afficher l'information.
- */
+
 @Getter
 @Setter
 @Builder

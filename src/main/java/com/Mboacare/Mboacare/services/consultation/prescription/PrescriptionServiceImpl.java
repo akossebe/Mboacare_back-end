@@ -16,28 +16,25 @@ import com.Mboacare.Mboacare.exception.ResourceNotFoundException;
 import com.Mboacare.Mboacare.repositories.ConsultationRepository;
 import com.Mboacare.Mboacare.repositories.PrescriptionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
 
-
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class PrescriptionServiceImpl implements PrescriptionService {
-
-
-
 
         private final PrescriptionRepository prescriptionRepository;
         private final ConsultationRepository consultationRepository;
 
-        // ======================= CRUD DE BASE =======================
-
         @Override
-        public List<PrescriptionResDTO> getTous() {
-            return prescriptionRepository.findAll().stream().map(this::versDTO).toList();
+        public Page<PrescriptionResDTO> getTous(Pageable pageable) {
+            return prescriptionRepository.findAll(pageable).map(this::versDTO);
         }
 
         @Override
@@ -46,28 +43,28 @@ public class PrescriptionServiceImpl implements PrescriptionService {
             prescriptionRepository.delete(prescription);
         }
 
-        // ======================= METHODES METIER =======================
+
+
 
         @Override
         public PrescriptionResDTO rediger(PrescriptionReqDTO dto) {
-            // 1. La consultation d'origine doit exister
+
             Consultation consultation = consultationRepository.findById(dto.getIdConsultation())
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Consultation introuvable avec l'id : " + dto.getIdConsultation()));
 
-            // 2. REGLE METIER : on ne peut rediger une prescription que sur
-            // une consultation CLOTUREE (le diagnostic doit etre pose).
+
             if (consultation.getStatut() != StatutConsultation.CLOTUREE) {
                 throw new BusinessRuleException(
                         "La consultation doit etre CLOTUREE avant de rediger une prescription");
             }
 
-            // 3. REGLE METIER : une seule prescription par consultation
+
             if (prescriptionRepository.findByIdConsultation(consultation.getIdConsultation()).isPresent()) {
                 throw new BusinessRuleException("Une prescription existe deja pour cette consultation");
             }
 
-            // 4. On convertit les lignes de medicaments du DTO vers l'entite Embeddable
+
             List<LigneMedicament> lignes = dto.getLignesMedicaments().stream()
                     .map(l -> new LigneMedicament(l.getNomMedicament(), l.getPosologie(), l.getDuree(), l.getQuantite()))
                     .toList();
@@ -87,8 +84,6 @@ public class PrescriptionServiceImpl implements PrescriptionService {
         public PrescriptionResDTO valider(Long id) {
             Prescription prescription = trouverOuLeverErreur(id);
 
-            // REGLE METIER : on ne peut valider qu'une prescription EMISE,
-            // et elle doit contenir au moins un medicament.
             if (prescription.getStatut() != StatutPrescription.EMISE) {
                 throw new BusinessRuleException(
                         "Seule une prescription EMISE peut etre validee (statut actuel : "
@@ -98,9 +93,7 @@ public class PrescriptionServiceImpl implements PrescriptionService {
                 throw new BusinessRuleException("La prescription doit contenir au moins un medicament");
             }
 
-            // Ici, "valider" est une verification metier : elle ne change pas
-            // le statut mais confirme que la prescription est prete a etre
-            // envoyee. On la renvoie telle quelle.
+
             return versDTO(prescription);
         }
 
@@ -108,7 +101,7 @@ public class PrescriptionServiceImpl implements PrescriptionService {
         public PrescriptionResDTO envoyerAPharmacie(Long id, EnvoyerPharmacieDTO dto) {
             Prescription prescription = trouverOuLeverErreur(id);
 
-            // REGLE METIER : on ne peut envoyer qu'une prescription encore EMISE
+
             if (prescription.getStatut() != StatutPrescription.EMISE) {
                 throw new BusinessRuleException(
                         "Seule une prescription EMISE peut etre envoyee a une pharmacie (statut actuel : "
@@ -130,8 +123,7 @@ public class PrescriptionServiceImpl implements PrescriptionService {
         public PrescriptionResDTO marquerDelivree(Long id) {
             Prescription prescription = trouverOuLeverErreur(id);
 
-            // REGLE METIER : seule une prescription TRANSMISE (reçue par la
-            // pharmacie) peut etre marquee comme delivree.
+
             if (prescription.getStatut() != StatutPrescription.TRANSMISE) {
                 throw new BusinessRuleException(
                         "Seule une prescription TRANSMISE peut etre marquee comme delivree (statut actuel : "
@@ -142,7 +134,7 @@ public class PrescriptionServiceImpl implements PrescriptionService {
             return versDTO(prescriptionRepository.save(prescription));
         }
 
-        // ======================= METHODES PRIVEES UTILITAIRES =======================
+
 
         private Prescription trouverOuLeverErreur(Long id) {
             return prescriptionRepository.findById(id)

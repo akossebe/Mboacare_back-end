@@ -7,7 +7,7 @@ import lombok.Setter;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-/** DTO specifique a l'action "reporter" un rendez-vous : nouvelle date/heure uniquement. */
+
 @Getter
 @Setter
 public class ReporterRendezVousDTO {

@@ -24,10 +24,7 @@ public class Prescription {
     @Column(nullable = false)
     private LocalDate dateEmission;
 
-    // @ElementCollection permet de stocker une LISTE d'objets @Embeddable
-    // (nos LigneMedicament) dans une table separee "prescription_lignes",
-    // automatiquement liee a la prescription. Pas besoin de creer une
-    // entite/table a part pour ca.
+
     @ElementCollection
     @CollectionTable(
             name = "prescription_lignes",
@@ -41,16 +38,13 @@ public class Prescription {
     private StatutPrescription statut;
 
 
-    // Reference vers la consultation d'origine (une consultation cloturee
-    // ne peut avoir qu'UNE seule prescription active).
     @Column(nullable = false, unique = true)
     private Long idConsultation;
 
     @Column(nullable = false)
     private Long idMedecin;
 
-    // Cette pharmacie n'est connue qu'au moment ou le patient choisit
-    // ou envoyer sa prescription (via la geolocalisation) -> nullable au depart.
+
     @Column(nullable = true)
     private Long idPharmacie;
 

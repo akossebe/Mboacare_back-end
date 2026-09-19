@@ -7,17 +7,18 @@ import com.Mboacare.Mboacare.dto.Consultation.CompteRenduDTO;
 import com.Mboacare.Mboacare.dto.Consultation.ConsultationReqDTO;
 import com.Mboacare.Mboacare.dto.Consultation.ConsultationResDTO;
 import com.Mboacare.Mboacare.dto.Consultation.DiagnosticReqDTO;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface ConsultationService {
 
-    // --- CRUD de base ---
+
     ConsultationResDTO getParId(Long id);
-    List<ConsultationResDTO> getTous();
+    Page<ConsultationResDTO> getTous(Pageable pageable);
     void supprimer(Long id);
 
-    // --- Methodes metier du cahier des charges ---
+
+
     ConsultationResDTO creerConsultation(ConsultationReqDTO dto);
     ConsultationResDTO enregistrerDiagnostic(Long id, DiagnosticReqDTO dto);
     ConsultationResDTO cloturerConsultation(Long id);

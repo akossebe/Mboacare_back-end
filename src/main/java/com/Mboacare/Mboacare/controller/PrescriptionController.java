@@ -7,11 +7,13 @@ import com.Mboacare.Mboacare.dto.Prescription.PrescriptionResDTO;
 import com.Mboacare.Mboacare.services.consultation.prescription.PrescriptionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/prescriptions")
@@ -35,9 +37,14 @@ public class PrescriptionController {
 
     // GET /api/prescriptions
     @GetMapping
-    public ResponseEntity<List<PrescriptionResDTO>> getTous() {
-        return ResponseEntity.ok(prescriptionService.getTous());
+    public ResponseEntity<Page<PrescriptionResDTO>> getTous(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "dateEmission") String trier) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(trier).descending());
+        return ResponseEntity.ok(prescriptionService.getTous(pageable));
     }
+
 
     // DELETE /api/prescriptions/5
     @DeleteMapping("/{id}")

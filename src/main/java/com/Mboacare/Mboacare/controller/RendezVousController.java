@@ -7,6 +7,10 @@ import com.Mboacare.Mboacare.dto.RendezVous.ReporterRendezVousDTO;
 import com.Mboacare.Mboacare.services.consultation.RendezVous.RendezVousService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -46,10 +50,23 @@ public class RendezVousController {
 
     // GET /api/rendez-vous
     @GetMapping
-    public ResponseEntity<List<RendezVousResDTO>> getTous() {
-        return ResponseEntity.ok(rendezVousService.getTous());
-    }
+    public ResponseEntity<Page<RendezVousResDTO>> getTous(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "dateSouhaitee") String trier) {
 
+        // PageRequest.of(page, size, tri) construit l'objet Pageable
+        // Spring Data utilisera la pagination et le tri demandés.
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by(trier).descending()
+        );
+
+        return ResponseEntity.ok(
+                rendezVousService.getTous(pageable)
+        );
+    }
     // DELETE /api/rendez-vous/5
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> supprimer(@PathVariable Long id) {

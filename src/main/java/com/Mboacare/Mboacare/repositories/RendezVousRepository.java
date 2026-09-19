@@ -3,18 +3,24 @@ package com.Mboacare.Mboacare.repositories;
 import com.Mboacare.Mboacare.entities.RendezVous;
 import com.Mboacare.Mboacare.enums.StatutRendezVous;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 
 public interface RendezVousRepository extends JpaRepository<RendezVous, Long> {
 
-    // Genere automatiquement : SELECT * FROM rendez_vous WHERE id_medecin = ?
-    List<RendezVous> findByIdMedecin(Long idMedecin);
+    @Query("SELECT COUNT(r) > 0 FROM RendezVous r WHERE r.idMedecin = :idMedecin " +
+           "AND r.dateSouhaitee = :date AND r.heureSouhaitee = :heure " +
+           "AND r.statut NOT IN (com.Mboacare.Mboacare.enums.StatutRendezVous.ANNULE)")
+    boolean existsByMedecinAndDateAndHeureAndNotCancelled(@Param("idMedecin") Long idMedecin,
+                                                          @Param("date") LocalDate date,
+                                                          @Param("heure") LocalTime heure);
 
-    // Genere automatiquement : SELECT * FROM rendez_vous WHERE id_patient = ?
-    List<RendezVous> findByIdPatient(Long idPatient);
+    long countByIdMedecin(Long idMedecin);
 
-    // Genere automatiquement : SELECT * FROM rendez_vous WHERE statut = ?
-    List<RendezVous> findByStatut(StatutRendezVous statut);
-}
+    @Query("SELECT COUNT(r) FROM RendezVous r WHERE r.idMedecin = :idMedecin AND r.statut = com.Mboacare.Mboacare.enums.StatutRendezVous.ANNULE")
+    long countAnnulesByIdMedecin(@Param("idMedecin") Long idMedecin);}

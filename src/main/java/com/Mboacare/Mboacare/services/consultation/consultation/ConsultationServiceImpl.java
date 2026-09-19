@@ -14,12 +14,13 @@ import com.Mboacare.Mboacare.exception.ResourceNotFoundException;
 import com.Mboacare.Mboacare.repositories.ConsultationRepository;
 import com.Mboacare.Mboacare.repositories.RendezVousRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -27,11 +28,8 @@ import java.util.List;
 public class ConsultationServiceImpl implements ConsultationService {
 
     private final ConsultationRepository consultationRepository;
-    // On a aussi besoin du repository RendezVous car une consultation
-    // nait TOUJOURS d'un rendez-vous confirme (regle metier).
     private final RendezVousRepository rendezVousRepository;
 
-    // ======================= CRUD DE BASE =======================
 
     @Override
     @Transactional
@@ -41,9 +39,10 @@ public class ConsultationServiceImpl implements ConsultationService {
 
     @Override
     @Transactional
-    public List<ConsultationResDTO> getTous() {
-        return consultationRepository.findAll().stream().map(this::versDTO).toList();
+    public Page<ConsultationResDTO> getTous(Pageable pageable) {
+        return consultationRepository.findAll(pageable).map(this::versDTO);
     }
+
 
     @Override
     @Transactional
@@ -52,32 +51,29 @@ public class ConsultationServiceImpl implements ConsultationService {
         consultationRepository.delete(consultation);
     }
 
-    // ======================= METHODES METIER =======================
 
     @Override
     @Transactional
     public ConsultationResDTO creerConsultation(ConsultationReqDTO dto) {
-        // 1. On recupere le rendez-vous d'origine
+
         RendezVous rendezVous = rendezVousRepository.findById(dto.getIdRendezVous())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Rendez-vous introuvable avec l'id : " + dto.getIdRendezVous()));
 
-        // 2. REGLE METIER : on ne peut creer une consultation que si le
-        // rendez-vous a ete CONFIRME au prealable.
+
         if (rendezVous.getStatut() != StatutRendezVous.CONFIRME) {
             throw new BusinessRuleException(
                     "Le rendez-vous doit etre CONFIRME avant de creer une consultation (statut actuel : "
                             + rendezVous.getStatut() + ")");
         }
 
-        // 3. REGLE METIER : un rendez-vous ne peut donner naissance qu'a
-        // une seule consultation.
+
         if (consultationRepository.findByIdRendezVous(rendezVous.getIdRendezVous()).isPresent()) {
             throw new BusinessRuleException(
                     "Une consultation existe deja pour ce rendez-vous");
         }
 
-        // 4. Creation de la consultation, avec les infos reprises du rendez-vous
+
         Consultation consultation = Consultation.builder()
                 .dateConsultation(LocalDate.now())
                 .heureConsultation(LocalTime.now())
@@ -90,7 +86,7 @@ public class ConsultationServiceImpl implements ConsultationService {
 
         Consultation sauvegardee = consultationRepository.save(consultation);
 
-        // 5. Le rendez-vous est desormais "honore" (le patient s'est presente)
+
         rendezVous.setStatut(StatutRendezVous.HONORE);
         rendezVousRepository.save(rendezVous);
 
@@ -102,8 +98,7 @@ public class ConsultationServiceImpl implements ConsultationService {
     public ConsultationResDTO enregistrerDiagnostic(Long id, DiagnosticReqDTO dto) {
         Consultation consultation = trouverOuLeverErreur(id);
 
-        // REGLE METIER : on ne modifie le diagnostic que sur une consultation
-        // encore EN_COURS (une consultation cloturee est figee).
+
         if (consultation.getStatut() != StatutConsultation.EN_COURS) {
             throw new BusinessRuleException(
                     "Impossible de modifier le diagnostic d'une consultation " + consultation.getStatut());
@@ -124,7 +119,7 @@ public class ConsultationServiceImpl implements ConsultationService {
             throw new BusinessRuleException("Cette consultation est deja cloturee");
         }
 
-        // REGLE METIER : impossible de cloturer sans diagnostic renseigne
+
         if (consultation.getDiagnostic() == null || consultation.getDiagnostic().isBlank()) {
             throw new BusinessRuleException(
                     "Impossible de cloturer une consultation sans diagnostic renseigne");
@@ -139,8 +134,7 @@ public class ConsultationServiceImpl implements ConsultationService {
     public CompteRenduDTO genererCompteRendu(Long id) {
         Consultation consultation = trouverOuLeverErreur(id);
 
-        // REGLE METIER : un compte-rendu n'a de sens que si la consultation
-        // est terminee.
+
         if (consultation.getStatut() != StatutConsultation.CLOTUREE) {
             throw new BusinessRuleException(
                     "Le compte-rendu ne peut etre genere que pour une consultation cloturee");
@@ -164,7 +158,6 @@ public class ConsultationServiceImpl implements ConsultationService {
                 .build();
     }
 
-    // ======================= METHODES PRIVEES UTILITAIRES =======================
 
     private Consultation trouverOuLeverErreur(Long id) {
         return consultationRepository.findById(id)

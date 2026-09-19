@@ -8,11 +8,7 @@ import lombok.Setter;
 
 import java.util.List;
 
-/**
- * DTO pour REDIGER une prescription (methode rediger()).
- * @Valid sur la liste + @NotEmpty garantissent qu'on ne peut pas
- * creer une prescription sans au moins un medicament dedans.
- */
+
 @Getter
 @Setter
 public class PrescriptionReqDTO {

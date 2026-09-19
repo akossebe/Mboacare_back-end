@@ -11,7 +11,7 @@ public interface ConsultationRepository extends JpaRepository<Consultation, Long
 
 
     List<Consultation> findByIdMedecin(Long idMedecin);
-    // Optional<...> = "peut-etre qu'il n'y a pas de resultat". C'est le cas
-    // ici car un rendez-vous donne n'a pas TOUJOURS de consultation associee.
+    long countByIdMedecin(Long idMedecin);
+
     Optional<Consultation> findByIdRendezVous(Long idRendezVous);
 }
