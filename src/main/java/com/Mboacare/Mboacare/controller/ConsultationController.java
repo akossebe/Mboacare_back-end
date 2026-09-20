@@ -1,7 +1,4 @@
 package com.Mboacare.Mboacare.controller;
-
-
-
 import com.Mboacare.Mboacare.dto.Consultation.CompteRenduDTO;
 import com.Mboacare.Mboacare.dto.Consultation.ConsultationReqDTO;
 import com.Mboacare.Mboacare.dto.Consultation.ConsultationResDTO;
@@ -23,18 +20,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 @RestController
 @RequestMapping("/api/consultations")
 @RequiredArgsConstructor
 public class ConsultationController {
-
     private final ConsultationService consultationService;
     private final PdfService pdfService;
     private final ConsultationRepository consultationRepository;
-
-    // ... (autres méthodes inchangées)
-
     @GetMapping("/{id}/pdf")
     public ResponseEntity<byte[]> genererPdf(@PathVariable Long id) throws DocumentException {
         Consultation consultation = consultationRepository.findById(id)
@@ -45,53 +37,39 @@ public class ConsultationController {
         headers.setContentDispositionFormData("filename", "consultation_" + id + ".pdf");
         return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
     }
-
-    // ---------- CRUD DE BASE ----------
-
     @GetMapping("/{id}")
     public ResponseEntity<ConsultationResDTO> getParId(@PathVariable Long id) {
         return ResponseEntity.ok(consultationService.getParId(id));
     }
-
     @GetMapping
     public ResponseEntity<Page<ConsultationResDTO>> getTous(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "dateConsultation") String trier) {
+            @RequestParam(defaultValue = "dateConsultation") String trier,
+            @RequestParam(required = false) Long idPatient,
+            @RequestParam(required = false) Long idMedecin) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(trier).descending());
-        return ResponseEntity.ok(consultationService.getTous(pageable));
+        return ResponseEntity.ok(consultationService.getTous(pageable, idPatient, idMedecin));
     }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> supprimer(@PathVariable Long id) {
         consultationService.supprimer(id);
         return ResponseEntity.noContent().build();
     }
-
-
-    // ---------- ACTIONS METIER ----------
-
-    // POST /api/consultations  (body = { "idRendezVous": 3, "motif": "..." })
     @PostMapping
     public ResponseEntity<ConsultationResDTO> creer(@Valid @RequestBody ConsultationReqDTO dto) {
         ConsultationResDTO creee = consultationService.creerConsultation(dto);
         return new ResponseEntity<>(creee, HttpStatus.CREATED);
     }
-
-    // PATCH /api/consultations/5/diagnostic  (body = { "diagnostic": "...", "observations": "..." })
     @PatchMapping("/{id}/diagnostic")
     public ResponseEntity<ConsultationResDTO> enregistrerDiagnostic(
             @PathVariable Long id, @Valid @RequestBody DiagnosticReqDTO dto) {
         return ResponseEntity.ok(consultationService.enregistrerDiagnostic(id, dto));
     }
-
-    // PATCH /api/consultations/5/cloturer
     @PatchMapping("/{id}/cloturer")
     public ResponseEntity<ConsultationResDTO> cloturer(@PathVariable Long id) {
         return ResponseEntity.ok(consultationService.cloturerConsultation(id));
     }
-
-    // GET /api/consultations/5/compte-rendu
     @GetMapping("/{id}/compte-rendu")
     public ResponseEntity<CompteRenduDTO> compteRendu(@PathVariable Long id) {
         return ResponseEntity.ok(consultationService.genererCompteRendu(id));

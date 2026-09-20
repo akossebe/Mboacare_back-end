@@ -1,13 +1,8 @@
 package com.Mboacare.Mboacare.dto.Consultation;
-
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-
 import java.time.LocalDate;
-
-
     @Getter
     @Builder
     @AllArgsConstructor
@@ -17,7 +12,5 @@ import java.time.LocalDate;
         private String motif;
         private String diagnostic;
         private String observations;
-        private String contenuTextuel; // texte pret a afficher/imprimer
+        private String contenuTextuel; 
     }
-
-

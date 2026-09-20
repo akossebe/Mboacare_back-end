@@ -1,9 +1,7 @@
 package com.Mboacare.Mboacare.dto;
-
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-
 @Getter
 @Setter
 @Builder
