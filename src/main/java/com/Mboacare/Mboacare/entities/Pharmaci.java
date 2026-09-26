@@ -1,4 +1,4 @@
-package com.logonedigital.MBOAcare.entity;
+package com.Mboacare.Mboacare.entities;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;

@@ -1,7 +1,7 @@
-package com.logonedigital.MBOAcare.repositoy;
+package com.Mboacare.Mboacare.repositories;
 
 
-import com.logonedigital.MBOAcare.entity.Stock;
+import com.Mboacare.Mboacare.entities.Stock;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

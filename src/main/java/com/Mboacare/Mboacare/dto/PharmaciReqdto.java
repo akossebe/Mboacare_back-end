@@ -1,4 +1,4 @@
-package com.logonedigital.MBOAcare.dto;
+package com.Mboacare.Mboacare.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;

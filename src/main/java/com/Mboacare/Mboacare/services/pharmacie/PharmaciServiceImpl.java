@@ -1,11 +1,11 @@
-package com.logonedigital.MBOAcare.service.pharmaci;
+package com.Mboacare.Mboacare.services.pharmacie;
 
-import com.logonedigital.MBOAcare.Exception.ResourceExistException;
-import com.logonedigital.MBOAcare.Exception.ResourceNotFoundException;
-import com.logonedigital.MBOAcare.dto.*;
-import com.logonedigital.MBOAcare.entity.Pharmaci;
-import com.logonedigital.MBOAcare.repositoy.PharmaciRepo;
-import com.logonedigital.MBOAcare.repositoy.StockRepo;
+import com.Mboacare.Mboacare.exception.ResourceExistException;
+import com.Mboacare.Mboacare.exception.ResourceNotFoundException;
+import com.Mboacare.Mboacare.dto.*;
+import com.Mboacare.Mboacare.entities.Pharmaci;
+import com.Mboacare.Mboacare.repositories.PharmaciRepo;
+import com.Mboacare.Mboacare.repositories.StockRepo;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.*;
 import org.springframework.data.domain.PageRequest;

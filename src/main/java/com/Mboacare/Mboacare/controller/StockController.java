@@ -1,8 +1,8 @@
-package com.logonedigital.MBOAcare.controller;
+package com.Mboacare.Mboacare.controller;
 
-import com.logonedigital.MBOAcare.dto.StockReqdto;
-import com.logonedigital.MBOAcare.dto.StockResdto;
-import com.logonedigital.MBOAcare.service.stock.StockService;
+import com.Mboacare.Mboacare.dto.StockReqdto;
+import com.Mboacare.Mboacare.dto.StockResdto;
+import com.Mboacare.Mboacare.services.pharmacie.StockService;
 import jakarta.validation.Valid;
 
 import org.springframework.data.domain.Page;

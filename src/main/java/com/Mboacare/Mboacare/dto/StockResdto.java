@@ -1,4 +1,4 @@
-package com.logonedigital.MBOAcare.dto;
+package com.Mboacare.Mboacare.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

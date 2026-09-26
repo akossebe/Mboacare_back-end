@@ -1,6 +1,6 @@
-package com.logonedigital.MBOAcare.repositoy;
+package com.Mboacare.Mboacare.repositories;
 
-import com.logonedigital.MBOAcare.entity.Medicament;
+import com.Mboacare.Mboacare.entities.Medicament;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
