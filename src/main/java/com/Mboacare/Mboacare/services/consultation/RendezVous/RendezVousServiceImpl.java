@@ -7,6 +7,7 @@ import com.Mboacare.Mboacare.enums.StatutRendezVous;
 import com.Mboacare.Mboacare.exception.BusinessRuleException;
 import com.Mboacare.Mboacare.exception.ResourceNotFoundException;
 import com.Mboacare.Mboacare.repositories.RendezVousRepository;
+import com.Mboacare.Mboacare.services.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +21,7 @@ import java.util.List;
 @Transactional
 public class RendezVousServiceImpl implements RendezVousService{
     private final RendezVousRepository rendezVousRepository;
+    private final NotificationService notificationService;
     @Override
     public RendezVousResDTO creer(RendezVousReqDTO dto) {
         if (rendezVousRepository.existsByMedecinAndDateAndHeureAndNotCancelled(
@@ -35,6 +37,7 @@ public class RendezVousServiceImpl implements RendezVousService{
                 .statut(StatutRendezVous.EN_ATTENTE)
                 .build();
         RendezVous sauvegarde = rendezVousRepository.save(rendezVous);
+        notificationService.notifyMedecin(sauvegarde.getIdMedecin(), "Nouveau rendez-vous", "Un patient a demandé un rendez-vous le " + sauvegarde.getDateSouhaitee());
         return versDTO(sauvegarde);
     }
     @Override
@@ -80,7 +83,9 @@ public class RendezVousServiceImpl implements RendezVousService{
             );
         }
         rendezVous.setStatut(StatutRendezVous.CONFIRME);
-        return versDTO(rendezVousRepository.save(rendezVous));
+        RendezVous sauvegarde = rendezVousRepository.save(rendezVous);
+        notificationService.notifyPatient(sauvegarde.getIdPatient(), "Rendez-vous confirmé", "Votre rendez-vous du " + sauvegarde.getDateSouhaitee() + " a été confirmé.");
+        return versDTO(sauvegarde);
     }
     @Override
     public RendezVousResDTO reporterRendezVous(Long id, ReporterRendezVousDTO dto) {
