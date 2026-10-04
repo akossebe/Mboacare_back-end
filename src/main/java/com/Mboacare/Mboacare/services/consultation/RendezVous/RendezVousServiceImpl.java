@@ -7,6 +7,7 @@ import com.Mboacare.Mboacare.enums.StatutRendezVous;
 import com.Mboacare.Mboacare.exception.BusinessRuleException;
 import com.Mboacare.Mboacare.exception.ResourceNotFoundException;
 import com.Mboacare.Mboacare.repositories.RendezVousRepository;
+import com.Mboacare.Mboacare.repositories.UtilisateurRepository;
 import com.Mboacare.Mboacare.services.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,6 +23,8 @@ import java.util.List;
 public class RendezVousServiceImpl implements RendezVousService{
     private final RendezVousRepository rendezVousRepository;
     private final NotificationService notificationService;
+    private final UtilisateurRepository utilisateurRepository;
+
     @Override
     public RendezVousResDTO creer(RendezVousReqDTO dto) {
         if (rendezVousRepository.existsByMedecinAndDateAndHeureAndNotCancelled(
@@ -37,7 +40,27 @@ public class RendezVousServiceImpl implements RendezVousService{
                 .statut(StatutRendezVous.EN_ATTENTE)
                 .build();
         RendezVous sauvegarde = rendezVousRepository.save(rendezVous);
-        notificationService.notifyMedecin(sauvegarde.getIdMedecin(), "Nouveau rendez-vous", "Un patient a demandé un rendez-vous le " + sauvegarde.getDateSouhaitee());
+
+        // Fetch patient for name
+        String nomPatient = utilisateurRepository.findById(sauvegarde.getIdPatient())
+                .map(u -> u.getPrenom() + " " + u.getNom())
+                .orElse("Un patient");
+
+        // Fetch doctor for name
+        String nomMedecin = utilisateurRepository.findById(sauvegarde.getIdMedecin())
+                .map(u -> "Dr. " + u.getPrenom() + " " + u.getNom())
+                .orElse("Le médecin");
+
+        // Notifier le médecin
+        notificationService.notifyMedecin(sauvegarde.getIdMedecin(), 
+            "Nouvelle demande de RDV", 
+            "Le patient " + nomPatient + " a demandé un rendez-vous le " + sauvegarde.getDateSouhaitee() + " à " + sauvegarde.getHeureSouhaitee() + ".\nMotif : " + sauvegarde.getMotifPrise());
+        
+        // Notifier le patient (lui-même)
+        notificationService.notifyPatient(sauvegarde.getIdPatient(), 
+            "Demande de RDV envoyée", 
+            "Vous êtes en attente de confirmation de votre rendez-vous avec le " + nomMedecin + " pour le " + sauvegarde.getDateSouhaitee() + " à " + sauvegarde.getHeureSouhaitee() + ".");
+
         return versDTO(sauvegarde);
     }
     @Override
@@ -84,7 +107,16 @@ public class RendezVousServiceImpl implements RendezVousService{
         }
         rendezVous.setStatut(StatutRendezVous.CONFIRME);
         RendezVous sauvegarde = rendezVousRepository.save(rendezVous);
-        notificationService.notifyPatient(sauvegarde.getIdPatient(), "Rendez-vous confirmé", "Votre rendez-vous du " + sauvegarde.getDateSouhaitee() + " a été confirmé.");
+        
+        String nomMedecin = utilisateurRepository.findById(sauvegarde.getIdMedecin())
+                .map(u -> "Dr. " + u.getPrenom() + " " + u.getNom() + " (" + u.getSpecialite() + ")")
+                .orElse("Le médecin");
+
+        notificationService.notifyPatient(sauvegarde.getIdPatient(), 
+            "Rendez-vous confirmé", 
+            "Votre rendez-vous a été confirmé par le " + nomMedecin + ". \n" +
+            "Détails : Le " + sauvegarde.getDateSouhaitee() + " à " + sauvegarde.getHeureSouhaitee() + ".\n" +
+            "Motif : " + sauvegarde.getMotifPrise());
         return versDTO(sauvegarde);
     }
     @Override
@@ -99,7 +131,18 @@ public class RendezVousServiceImpl implements RendezVousService{
         rendezVous.setDateSouhaitee(dto.getNouvelleDateSouhaitee());
         rendezVous.setHeureSouhaitee(dto.getNouvelleHeureSouhaitee());
         rendezVous.setStatut(StatutRendezVous.EN_ATTENTE);
-        return versDTO(rendezVousRepository.save(rendezVous));
+        
+        RendezVous sauvegarde = rendezVousRepository.save(rendezVous);
+        
+        String nomMedecin = utilisateurRepository.findById(sauvegarde.getIdMedecin())
+                .map(u -> "Dr. " + u.getPrenom() + " " + u.getNom())
+                .orElse("Le médecin");
+
+        notificationService.notifyPatient(sauvegarde.getIdPatient(), 
+            "Rendez-vous reporté", 
+            nomMedecin + " a reporté votre rendez-vous au " + sauvegarde.getDateSouhaitee() + " à " + sauvegarde.getHeureSouhaitee());
+
+        return versDTO(sauvegarde);
     }
     @Override
     public RendezVousResDTO annulerRendezVous(Long id) {
@@ -108,7 +151,18 @@ public class RendezVousServiceImpl implements RendezVousService{
             throw new BusinessRuleException("Impossible d'annuler un rendez-vous deja honore");
         }
         rendezVous.setStatut(StatutRendezVous.ANNULE);
-        return versDTO(rendezVousRepository.save(rendezVous));
+        
+        RendezVous sauvegarde = rendezVousRepository.save(rendezVous);
+
+        String nomMedecin = utilisateurRepository.findById(sauvegarde.getIdMedecin())
+                .map(u -> "Dr. " + u.getPrenom() + " " + u.getNom())
+                .orElse("Le médecin");
+
+        notificationService.notifyPatient(sauvegarde.getIdPatient(), 
+            "Rendez-vous annulé", 
+            nomMedecin + " a malheureusement annulé votre rendez-vous du " + sauvegarde.getDateSouhaitee());
+
+        return versDTO(sauvegarde);
     }
     private RendezVous trouverOuLeverErreur(Long id) {
         return rendezVousRepository.findById(id)
