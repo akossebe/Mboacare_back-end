@@ -64,6 +64,14 @@ import java.util.List;
         this.nom = nom;
     }
 
+    public Pharmaci getPharmaci() { return pharmaci; }
+
+        public void setPharmaci(Pharmaci pharmaci) { this.pharmaci = pharmaci; }
+
+        public List<Medicament> getMedicaments() { return medicaments; }
+
+        public void setMedicaments(List<Medicament> medicaments) { this.medicaments = medicaments; }
+
 
 
 

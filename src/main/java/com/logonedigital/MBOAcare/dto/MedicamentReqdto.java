@@ -1,57 +1,47 @@
 package com.logonedigital.MBOAcare.dto;
 
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 
 public class MedicamentReqdto {
 
-
-    @NotNull(message = "veuillez remplir ce champ")
-
+    @NotBlank(message = "veuillez remplir ce champ")
     private String nom;
-    @NotEmpty(message = "veuillez remplir ce champ")
 
+    @NotBlank(message = "veuillez remplir ce champ")
     private String forme;
 
-    @NotNull(message = "veuillez remplir ce champ")
-    @Min(0)
+    @Min(value = 0, message = "le prix doit etre positif")
     private int prix;
 
+    @NotBlank(message = "veuillez choisir un stock")
+    private String idStock;
 
-    public String getForme() {
-        return forme;
+    public MedicamentReqdto() {
     }
-
-    public void setForme(String forme) {
-        this.forme = forme;
-    }
-
-    public String getNom() {
-        return nom;
-    }
-
-    public void setNom(String nom) {
-        this.nom = nom;
-    }
-
-    public int getPrix() {
-        return prix;
-    }
-
-    public void setPrix(int prix) {
-        this.prix = prix;
-    }
-
-
 
     public MedicamentReqdto(String nom, String forme, int prix) {
         this.nom = nom;
         this.forme = forme;
         this.prix = prix;
-
     }
 
-    public MedicamentReqdto() {
+    public MedicamentReqdto(String nom, String forme, int prix, String idStock) {
+        this.nom = nom;
+        this.forme = forme;
+        this.prix = prix;
+        this.idStock = idStock;
     }
+
+    public String getNom() { return nom; }
+    public void setNom(String nom) { this.nom = nom; }
+
+    public String getForme() { return forme; }
+    public void setForme(String forme) { this.forme = forme; }
+
+    public int getPrix() { return prix; }
+    public void setPrix(int prix) { this.prix = prix; }
+
+    public String getIdStock() { return idStock; }
+    public void setIdStock(String idStock) { this.idStock = idStock; }
 }
