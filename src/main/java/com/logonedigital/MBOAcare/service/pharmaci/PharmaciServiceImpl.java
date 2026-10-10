@@ -32,25 +32,96 @@ public class PharmaciServiceImpl implements PharmaciService {
 
 
 
+    private PharmaciResdto toResdto(Pharmaci p) {
+        return new PharmaciResdto(
+                p.getIdPharmaci(),
+                p.getNom(),
+                p.getVille(),
+                p.getEmail(),
+                p.getQuartier()
+        );
+    }
+
     @Override
     public void addPharmaci(PharmaciReqdto pharmaciReqdto) {
+        String nom = pharmaciReqdto.getNom().trim();
+        String ville = pharmaciReqdto.getVille().trim();
+        String email = pharmaciReqdto.getEmail().trim();
 
-        Optional<Pharmaci> pharmaciFound =
-                this.pharmaciRepo.findByEmail(pharmaciReqdto.getEmail());
-
-        if (pharmaciFound.isPresent()) {
-            throw new ResourceExistException("Cette pharmacie existe deja");
+        if (this.pharmaciRepo.existsByNomIgnoreCaseAndVilleIgnoreCase(nom, ville)) {
+            throw new ResourceExistException("Cette pharmacie existe deja dans cette ville");
+        }
+        if (this.pharmaciRepo.findByEmail(email).isPresent()) {
+            throw new ResourceExistException("Cette adresse email est deja utilisee");
         }
 
-        Pharmaci pharmaci= new Pharmaci();
-        pharmaci.setNom(pharmaciReqdto.getNom());
-        pharmaci.setEmail(pharmaciReqdto.getEmail());
-        pharmaci.setVille(pharmaciReqdto.getVille());
-        pharmaci.setQuartier(pharmaciReqdto.getQuartier());
+        Pharmaci pharmaci = new Pharmaci();
+        pharmaci.setNom(nom);
+        pharmaci.setEmail(email);
+        pharmaci.setVille(ville);
+        pharmaci.setQuartier(pharmaciReqdto.getQuartier().trim());
         pharmaci.setDateCreation(LocalDate.now());
 
-
         this.pharmaciRepo.save(pharmaci);
+    }
+
+    @Override
+    public List<PharmaciResdto> getAllPharmaci() {
+        return this.pharmaciRepo.findAll().stream().map(this::toResdto).toList();
+    }
+
+    @Override
+    public void updatePharmaci(String idPharmaci, PharmaciReqdto pharmaciReqdto) {
+        Pharmaci oldPharmaci = this.pharmaciRepo.findById(idPharmaci)
+                .orElseThrow(() -> new ResourceNotFoundException("cette pharmacie n existe pas"));
+
+        String nom = pharmaciReqdto.getNom().trim();
+        String ville = pharmaciReqdto.getVille().trim();
+        String email = pharmaciReqdto.getEmail().trim();
+
+        if (this.pharmaciRepo.existsByNomIgnoreCaseAndVilleIgnoreCaseAndIdPharmaciNot(nom, ville, idPharmaci)) {
+            throw new ResourceExistException("Une autre pharmacie porte deja ce nom dans cette ville");
+        }
+        this.pharmaciRepo.findByEmail(email).ifPresent(autre -> {
+            if (!autre.getIdPharmaci().equals(idPharmaci)) {
+                throw new ResourceExistException("Cette adresse email est deja utilisee");
+            }
+        });
+
+        oldPharmaci.setNom(nom);
+        oldPharmaci.setVille(ville);
+        oldPharmaci.setEmail(email);
+        oldPharmaci.setQuartier(pharmaciReqdto.getQuartier().trim());
+
+        this.pharmaciRepo.saveAndFlush(oldPharmaci);
+    }
+
+    @Override
+    public Page<PharmaciResdto> getPaginated(int page, int size, String sortBy, String direction) {
+        Sort sort = direction.equalsIgnoreCase("desc") ?
+                Sort.by(sortBy).descending() :
+                Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        return pharmaciRepo.findAll(pageable).map(this::toResdto);
+    }
+
+    @Override
+    public List<Pharmaci> findPharmaciByMedicamentNom(String nomMedicament) {
+        return pharmaciRepo.findPharmaciByMedicamentNom(nomMedicament);
+    }
+
+    @Override
+    public List<Object[]> countMedicamentParPharmaci() {
+        return pharmaciRepo.countStockParPharmaci();
+    }
+
+    @Transactional
+    public void deletePharmaci(String id) {
+        Pharmaci pharmaci = pharmaciRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Pharmacie non trouvée"));
+        pharmaciRepo.delete(pharmaci); // Hibernate supprime les stocks automatiquement
     }
     @Override
     public PharmaciResdto getPharmaciById(String idPharmaci) {
@@ -67,76 +138,8 @@ public class PharmaciServiceImpl implements PharmaciService {
 
         return pharmaciResdto;
     }
-
-    @Override
-    public List<PharmaciResdto> getAllPharmaci() {
-        return this.pharmaciRepo.findAll().stream().map(pharmaci -> {
-
-            return new PharmaciResdto(pharmaci.getIdPharmaci(), pharmaci.getNom(), pharmaci.getEmail(),pharmaci.getVille(), pharmaci.getQuartier());
-        }).toList();
-    }
-
-    @Override
-    public void updatePharmaci(String idPharmaci, PharmaciReqdto pharmaciReqdto) {
-
-        Pharmaci oldPharmaci = this.pharmaciRepo.findById(idPharmaci)
-                .orElseThrow(() -> new ResourceNotFoundException("cette pharmacie n existe pas"));
-
-
-        oldPharmaci.setNom(pharmaciReqdto.getNom());
-        oldPharmaci.setVille(pharmaciReqdto.getVille());
-        oldPharmaci.setEmail(pharmaciReqdto.getEmail());
-        oldPharmaci.setQuartier(pharmaciReqdto.getQuartier());
-
-        this.pharmaciRepo.saveAndFlush(oldPharmaci);
-
-
-    }
-
-    @Transactional
-    public void deletePharmaci(String id) {
-        Pharmaci pharmaci = pharmaciRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Pharmacie non trouvée"));
-        pharmaciRepo.delete(pharmaci); // Hibernate supprime les stocks automatiquement
-    }
-
-    @Override
-    public Page<PharmaciResdto> getPaginated(
-            int page,
-            int size,
-            String sortBy,
-            String direction
-    ) {
-
-        Sort sort = direction.equalsIgnoreCase("desc") ?
-                Sort.by(sortBy).descending() :
-                Sort.by(sortBy).ascending();
-
-        Pageable pageable = PageRequest.of(page, size, sort);
-
-        Page<Pharmaci> pharmaciPage = pharmaciRepo.findAll(pageable);
-
-        return pharmaciPage.map(pharmaci -> new PharmaciResdto(
-                pharmaci.getIdPharmaci(),
-                pharmaci.getNom(),
-                pharmaci.getVille(),
-                pharmaci.getQuartier(),
-                pharmaci.getEmail()
-        ));
-    }
-
-    @Override
-    public List<Pharmaci> findPharmaciByMedicamentNom(String nomMedicament) {
-        return pharmaciRepo.findPharmaciByMedicamentNom(nomMedicament);
-    }
-
-    @Override
-    public List<Object[]> countMedicamentParPharmaci() {
-        return pharmaciRepo.countStockParPharmaci();
-    }
-
-
 }
+
 
 
 
