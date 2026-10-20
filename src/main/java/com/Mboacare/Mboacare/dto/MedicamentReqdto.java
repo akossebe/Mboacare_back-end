@@ -1,30 +1,36 @@
 package com.Mboacare.Mboacare.dto;
 
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 
 public class MedicamentReqdto {
 
-
-    @NotNull(message = "veuillez remplir ce champ")
-
+    @NotBlank(message = "veuillez remplir ce champ")
     private String nom;
-    @NotEmpty(message = "veuillez remplir ce champ")
 
+    @NotBlank(message = "veuillez remplir ce champ")
     private String forme;
 
-    @NotNull(message = "veuillez remplir ce champ")
-    @Min(0)
+    @Min(value = 0, message = "le prix doit être positif")
     private int prix;
 
+    @NotBlank(message = "veuillez choisir un stock")
+    private String idStock;
 
-    public String getForme() {
-        return forme;
+    public MedicamentReqdto() {
     }
 
-    public void setForme(String forme) {
+    public MedicamentReqdto(String nom, String forme, int prix) {
+        this.nom = nom;
         this.forme = forme;
+        this.prix = prix;
+    }
+
+    public MedicamentReqdto(String nom, String forme, int prix, String idStock) {
+        this.nom = nom;
+        this.forme = forme;
+        this.prix = prix;
+        this.idStock = idStock;
     }
 
     public String getNom() {
@@ -35,6 +41,14 @@ public class MedicamentReqdto {
         this.nom = nom;
     }
 
+    public String getForme() {
+        return forme;
+    }
+
+    public void setForme(String forme) {
+        this.forme = forme;
+    }
+
     public int getPrix() {
         return prix;
     }
@@ -43,15 +57,11 @@ public class MedicamentReqdto {
         this.prix = prix;
     }
 
-
-
-    public MedicamentReqdto(String nom, String forme, int prix) {
-        this.nom = nom;
-        this.forme = forme;
-        this.prix = prix;
-
+    public String getIdStock() {
+        return idStock;
     }
 
-    public MedicamentReqdto() {
+    public void setIdStock(String idStock) {
+        this.idStock = idStock;
     }
 }

@@ -13,5 +13,5 @@ public interface MedicamentService {
     void updateMedicament(String id, MedicamentReqdto medicamentReqdto);
     void deleteMedicament(String id);
     Page<MedicamentResdto> getPaginated(int page, int size, String sortBy);
-    List<com.Mboacare.Mboacare.entities.Medicament> findMedicamentByForme(String forme);
+    List<MedicamentResdto> findMedicamentByForme(String forme);
 }

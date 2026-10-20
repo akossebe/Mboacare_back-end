@@ -1,18 +1,28 @@
 package com.Mboacare.Mboacare.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-import java.util.List;
-
-
 public class StockResdto {
     private String idStock;
-    private int quantite ;
+    private int quantite;
     private String nom;
+    private String idPharmaci;
+    private String pharmaciNom;
 
+    public StockResdto() {
+    }
+
+    public StockResdto(String idStock, int quantite, String nom) {
+        this.idStock = idStock;
+        this.quantite = quantite;
+        this.nom = nom;
+    }
+
+    public StockResdto(String idStock, int quantite, String nom, String idPharmaci, String pharmaciNom) {
+        this.idStock = idStock;
+        this.quantite = quantite;
+        this.nom = nom;
+        this.idPharmaci = idPharmaci;
+        this.pharmaciNom = pharmaciNom;
+    }
 
     public String getIdStock() {
         return idStock;
@@ -38,16 +48,19 @@ public class StockResdto {
         this.nom = nom;
     }
 
-
-
-    public StockResdto(String idStock, int quantite, String nom) {
-        this.idStock = idStock;
-        this.quantite = quantite;
-        this.nom = nom;
+    public String getIdPharmaci() {
+        return idPharmaci;
     }
 
-    public StockResdto() {
+    public void setIdPharmaci(String idPharmaci) {
+        this.idPharmaci = idPharmaci;
     }
 
+    public String getPharmaciNom() {
+        return pharmaciNom;
+    }
 
+    public void setPharmaciNom(String pharmaciNom) {
+        this.pharmaciNom = pharmaciNom;
+    }
 }

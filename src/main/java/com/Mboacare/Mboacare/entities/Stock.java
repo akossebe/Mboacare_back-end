@@ -1,38 +1,38 @@
 package com.Mboacare.Mboacare.entities;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity
+@Table(name = "STOCK")
+public class Stock {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id_stock", updatable = false, nullable = false)
+    private String idStock;
 
-    @Entity
-    @Table(name = "STOCK")
+    private int quantite;
+    private String nom;
 
-    public class Stock {
-        @Id
-        @GeneratedValue(strategy = GenerationType.UUID)
-        @Column(name = "id_stock", updatable = false, nullable = false)
-        private String idStock;
-        private int quantite;
-        private String nom;
+    @OneToMany(mappedBy = "stock", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<Medicament> medicaments = new ArrayList<>();
 
-        @OneToMany(mappedBy = "stock", cascade = CascadeType.ALL)
-        @JsonManagedReference
-        private List<Medicament> medicaments = new ArrayList<>();
+    @ManyToOne
+    @JoinColumn(name = "id_pharmaci", nullable = true)
+    private Pharmaci pharmaci;
 
-        @ManyToOne
-        @JoinColumn(name = "id_pharmaci", nullable = true)
-        private Pharmaci pharmaci;
+    public Stock() {
+    }
 
-        public Stock(int quantite, String nom) {
-            this.quantite = quantite;
-            this.nom = nom;
-
-        }
+    public Stock(int quantite, String nom) {
+        this.quantite = quantite;
+        this.nom = nom;
+    }
 
     public Stock(String idStock, int quantite, String nom) {
         this.idStock = idStock;
@@ -40,7 +40,7 @@ import java.util.List;
         this.nom = nom;
     }
 
-        public String getIdStock() {
+    public String getIdStock() {
         return idStock;
     }
 
@@ -64,11 +64,19 @@ import java.util.List;
         this.nom = nom;
     }
 
-
-
-
-
-        public Stock() {
-        }
-
+    public List<Medicament> getMedicaments() {
+        return medicaments;
     }
+
+    public void setMedicaments(List<Medicament> medicaments) {
+        this.medicaments = medicaments;
+    }
+
+    public Pharmaci getPharmaci() {
+        return pharmaci;
+    }
+
+    public void setPharmaci(Pharmaci pharmaci) {
+        this.pharmaci = pharmaci;
+    }
+}

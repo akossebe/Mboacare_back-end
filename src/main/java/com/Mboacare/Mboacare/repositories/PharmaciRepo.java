@@ -10,16 +10,19 @@ import java.util.Optional;
 
 public interface PharmaciRepo extends JpaRepository<Pharmaci, String> {
 
-
     Optional<Pharmaci> findByEmail(String Email);
 
+    boolean existsByNomIgnoreCaseAndVilleIgnoreCase(String nom, String ville);
 
+    boolean existsByNomIgnoreCaseAndVilleIgnoreCaseAndIdPharmaciNot(String nom, String ville, String idPharmaci);
+
+    boolean existsByEmailIgnoreCase(String email);
+
+    boolean existsByEmailIgnoreCaseAndIdPharmaciNot(String email, String idPharmaci);
 
     @Query("SELECT DISTINCT s.pharmaci FROM Stock s JOIN s.medicaments m WHERE m.nom = :nomMedicament")
     List<Pharmaci> findPharmaciByMedicamentNom(@Param("nomMedicament") String nomMedicament);
 
     @Query("SELECT p.nom, SUM(s.quantite) FROM Pharmaci p JOIN p.stock s GROUP BY p.nom")
     List<Object[]> countStockParPharmaci();
-
 }
-
